@@ -1,9 +1,12 @@
-# Create Function App and Storage Account in Azure
-## Step 1: Sign in to Azure Portal
+# CST8917 Lab 1: Building Azure Function Apps with Output Bindings
+
+## Task 1: Create Function App and Storage Account in Azure
+## 1. Create Azure Resources
+### Step 1: Sign in to Azure Portal
 - Go to: [https://portal.azure.com](https://portal.azure.com)
 - Log in with your Azure account.
 ---
-## Step 2: Create a Storage Account
+### Step 2: Create a Storage Account
 1. In the search bar, type **"Storage accounts"** and click on it.
 2. Click **+ Create**.
 3. **Basics tab**:
@@ -14,7 +17,7 @@
    - **Performance**: Standard
    - **Redundancy**: Locally-redundant storage (LRS) is fine for most cases.
 4. Click **Review + Create**, then **Create**.
-## Step 3: Create a Function App
+### Step 3: Create a Function App
 1. In the search bar, type **"Function App"** and click on it.
 2. Click **+ Create**.
 3. **Basics tab**:
@@ -30,36 +33,24 @@
 6. **Monitoring tab**:
    - **Application Insights**: Enable (optional, for logging).
 7. Click **Review + Create**, then **Create**.
-## Step 4: Wait for Deployment
-
+### Step 4: Wait for Deployment
 - After deployment completes, click **Go to Resource** to open your Function App.
-
-## Step 5 (Optional): Create a Function Inside Your Function App
-
+### Step 5: Create a Function Inside Your Function App
 1. In the **Function App** page, go to **Functions** in the left-hand menu.
 2. Click **+ Add**.
 3. Choose a **Development environment** (e.g., VS Code or Azure portal).
 4. Select a **template**, such as **HTTP trigger**.
 5. Configure the **trigger settings** and click **Create**.
-
-## Create a Local Azure Functions Project in Python (Visual Studio Code)
+---
+## 2. Create a Local Azure Functions Project in Python (Visual Studio Code)
 Follow the steps below to create a local Azure Functions project using **Python (Programming Model V2)** in **Visual Studio Code**.
----
-## Step 1: Open Command Palette
-
+### Step 1: Open Command Palette
 - Press `F1` or `Ctrl+Shift+P` in Visual Studio Code.
-- Run the command:  
-
----
-
-## Step 2: Select Project Folder
-
+- Run the command: 
+### Step 2: Select Project Folder
 - Choose the directory location for your project workspace.
-- **Important:** Select a new or empty folder.  
----
-
-## Step 3: Provide the Following Information When Prompted
-
+- **Important:** Select a new or empty folder. 
+### Step 3: Provide the Following Information When Prompted
 | Prompt | Your Selection |
 |--------|----------------|
 | **Select a language** | `Python (Programming Model V2)` |
@@ -68,33 +59,15 @@ Follow the steps below to create a local Azure Functions project using **Python 
 | **Name of the function you want to create** | `HttpExample` |
 | **Authorization level** | `ANONYMOUS` *(lets anyone call your function endpoint)* |
 | **Select how you would like to open your project** | `Open in current window` |
-
----
-
-## Step 4: Project is Created
-
+### Step 4: Project is Created
 Visual Studio Code will:
-
 - Scaffold a new Azure Functions project.
 - Add your first function: `HttpExample`.
 - Create a `function_app.py` file that includes your HTTP-triggered function.
-
 > You can now view the project files in the **Explorer** pane of VS Code.
 
----
-
-## Next Steps
-
-You’re now ready to:
-- Edit your function logic in `function_app.py`
-- Add bindings (input/output)
-- Run and debug your function locally
-- Deploy the function to Azure
-
- # Download Remote App Settings
-
+ ### Step 5: Download Remote App Settings
 To connect your function to the Azure Storage account during local execution:
-
 1. Press `F1` in **Visual Studio Code**
 2. Run: `Azure Functions: Download Remote Settings...`
 3. Select your function app from the Azure list
@@ -102,12 +75,7 @@ To connect your function to the Azure Storage account during local execution:
 5. Open the `local.settings.json` file
 6. Copy the value for `AzureWebJobsStorage`
 
-> ⚠️ **Important:** `local.settings.json` contains sensitive data and should not be committed to source control.
-
----
-
-## 📦 2. Verify Extension Bundles
-
+### Step 6: Verify Extension Bundles
 Ensure the `host.json` file includes the correct extension bundle configuration:
 
 ```json
@@ -124,10 +92,8 @@ This enables support for Storage Queue output bindings without installing them m
 
 ---
 
-## 🔧 3. Add Queue Output Binding to the Function
-
+### Step 6: Add Queue Output Binding to the Function
 Update your `function_app.py` file:
-
 ```python
 import azure.functions as func
 import logging
@@ -160,9 +126,9 @@ def HttpExample(req: func.HttpRequest, msg: func.Out[func.QueueMessage]) -> func
 
 This allows your function to send the `name` value as a message to the `outqueue`.
 
----
 
-## ▶️ 4. Run the Function Locally
+
+### Step 7. Run the Function Locally
 
 Open a terminal in your project directory and run the following:
 
@@ -175,26 +141,14 @@ source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
 # Start the Azure Function app locally
-func start
+press F5 to start the function app project and Core Tools.
+
+# With the Core Tools running, go to the Azure: Functions area. 
+Under Functions, expand Local Project > Functions. Right-click (Ctrl-click) the HttpExample function and select Execute Function Now....
+This sends a message ("Azure") to the queue `outqueue`.
 ```
 
----
-
-## 📬 5. Trigger the Function Locally
-
-Use a tool like curl, Postman, or the Azure extension in VS Code to invoke the function:
-
-```bash
-curl -X POST http://localhost:7071/api/HttpExample \
--H "Content-Type: application/json" \
--d '{"name":"Azure"}'
-```
-
-✅ This sends a message ("Azure") to the queue `outqueue`.
-
----
-
-## 🔍 6. View the Queue Message (Using Azure Storage Explorer)
+### Step 8. View the Queue Message (Using Azure Storage Explorer)
 
 - Download and install Azure Storage Explorer
 - Launch it and click **Connect**
