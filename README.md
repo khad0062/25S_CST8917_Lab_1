@@ -1,6 +1,6 @@
 # CST8917 Lab 1: Building Azure Function Apps with Output Bindings
 
-## Task 1: Create Function App and Storage Account in Azure
+## Task 1: Connect Azure Functions to Azure Storage using Visual Studio Codee
 ## 1. Create Azure Resources
 ### Step 1: Sign in to Azure Portal
 - Go to: [https://portal.azure.com](https://portal.azure.com)
@@ -172,7 +172,7 @@ To publish your updated function code to Azure:
 - Recheck the queue `outqueue` in Storage Explorer to confirm the message was added
 You have successfully tested both the local and deployed versions of your function with a working queue output binding!
 ---
-## Task 2: Azure Function App: Connect to Azure SQL Database using Output Binding
+## Task 2: Connect Azure Functions to Azure SQL Database using Visual Studio Code
 
 ### Step 1: Create Azure SQL Database
 
