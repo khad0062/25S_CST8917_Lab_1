@@ -1,6 +1,6 @@
 # CST8917 Lab 1: Building Azure Function Apps with Output Bindings
 
-## Task 1: Connect Azure Functions to Azure Storage using Visual Studio Codee
+## Task 1: Connect Azure Functions to Azure Storage using Visual Studio Code.
 ## 1. Create Azure Resources
 ### Step 1: Sign in to Azure Portal
 - Go to: [https://portal.azure.com](https://portal.azure.com)
