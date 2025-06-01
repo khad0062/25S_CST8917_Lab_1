@@ -5,7 +5,7 @@
 ### Step 1: Sign in to Azure Portal
 - Go to: [https://portal.azure.com](https://portal.azure.com)
 - Log in with your Azure account.
----
+
 ### Step 2: Create a Storage Account
 1. In the search bar, type **"Storage accounts"** and click on it.
 2. Click **+ Create**.
@@ -17,6 +17,7 @@
    - **Performance**: Standard
    - **Redundancy**: Locally-redundant storage (LRS) is fine for most cases.
 4. Click **Review + Create**, then **Create**.
+
 ### Step 3: Create a Function App
 1. In the search bar, type **"Function App"** and click on it.
 2. Click **+ Create**.
@@ -33,23 +34,27 @@
 6. **Monitoring tab**:
    - **Application Insights**: Enable (optional, for logging).
 7. Click **Review + Create**, then **Create**.
+
 ### Step 4: Wait for Deployment
 - After deployment completes, click **Go to Resource** to open your Function App.
+
 ### Step 5: Create a Function Inside Your Function App
 1. In the **Function App** page, go to **Functions** in the left-hand menu.
 2. Click **+ Add**.
 3. Choose a **Development environment** (e.g., VS Code or Azure portal).
 4. Select a **template**, such as **HTTP trigger**.
 5. Configure the **trigger settings** and click **Create**.
----
+
 ## 2. Create a Local Azure Functions Project in Python (Visual Studio Code)
 Follow the steps below to create a local Azure Functions project using **Python (Programming Model V2)** in **Visual Studio Code**.
 ### Step 1: Open Command Palette
 - Press `F1` or `Ctrl+Shift+P` in Visual Studio Code.
 - Run the command: 
+
 ### Step 2: Select Project Folder
 - Choose the directory location for your project workspace.
 - **Important:** Select a new or empty folder. 
+
 ### Step 3: Provide the Following Information When Prompted
 | Prompt | Your Selection |
 |--------|----------------|
@@ -59,6 +64,7 @@ Follow the steps below to create a local Azure Functions project using **Python 
 | **Name of the function you want to create** | `HttpExample` |
 | **Authorization level** | `ANONYMOUS` *(lets anyone call your function endpoint)* |
 | **Select how you would like to open your project** | `Open in current window` |
+
 ### Step 4: Project is Created
 Visual Studio Code will:
 - Scaffold a new Azure Functions project.
@@ -66,7 +72,7 @@ Visual Studio Code will:
 - Create a `function_app.py` file that includes your HTTP-triggered function.
 > You can now view the project files in the **Explorer** pane of VS Code.
 
- ### Step 5: Download Remote App Settings
+### Step 5: Download Remote App Settings
 To connect your function to the Azure Storage account during local execution:
 1. Press `F1` in **Visual Studio Code**
 2. Run: `Azure Functions: Download Remote Settings...`
@@ -77,7 +83,6 @@ To connect your function to the Azure Storage account during local execution:
 
 ### Step 6: Verify Extension Bundles
 Ensure the `host.json` file includes the correct extension bundle configuration:
-
 ```json
 {
   "version": "2.0",
@@ -87,10 +92,7 @@ Ensure the `host.json` file includes the correct extension bundle configuration:
   }
 }
 ```
-
 This enables support for Storage Queue output bindings without installing them manually.
-
----
 
 ### Step 6: Add Queue Output Binding to the Function
 Update your `function_app.py` file:
@@ -123,15 +125,10 @@ def HttpExample(req: func.HttpRequest, msg: func.Out[func.QueueMessage]) -> func
             status_code=200
         )
 ```
-
 This allows your function to send the `name` value as a message to the `outqueue`.
 
-
-
 ### Step 7. Run the Function Locally
-
 Open a terminal in your project directory and run the following:
-
 ```bash
 # Create and activate virtual environment (if not done already)
 python -m venv .venv
@@ -148,8 +145,7 @@ Under Functions, expand Local Project > Functions. Right-click (Ctrl-click) the 
 This sends a message ("Azure") to the queue `outqueue`.
 ```
 
-### Step 8. View the Queue Message (Using Azure Storage Explorer)
-
+### Step 8: View the Queue Message (Using Azure Storage Explorer)
 - Download and install Azure Storage Explorer
 - Launch it and click **Connect**
 - Choose **Add an Azure account**, then sign in
@@ -157,21 +153,14 @@ This sends a message ("Azure") to the queue `outqueue`.
 - Open `outqueue`
 - You will see the message written by your function (e.g., "Azure")
 
----
-
-## ☁️ 7. Deploy Updated Function to Azure
-
+### Step 9: Deploy Updated Function to Azure
 To publish your updated function code to Azure:
-
 - Press `F1` in Visual Studio Code
 - Run: `Azure Functions: Deploy to Function App...`
 - Select the same Function App created earlier
 - Click **Deploy** when prompted to overwrite files
 
----
-
-## 🔁 8. Test Live Function in Azure
-
+### Step 10: Test Live Function in Azure
 - Press `F1` and select `Azure Functions: Execute Function Now...`
 - Choose the `HttpExample` function
 - Enter this JSON as the request body:
@@ -179,33 +168,25 @@ To publish your updated function code to Azure:
 ```json
 { "name": "Azure" }
 ```
-
-- Confirm the function executes successfully
+- Confirm the function executes successfully.
 - Recheck the queue `outqueue` in Storage Explorer to confirm the message was added
-
-✅ You have successfully tested both the local and deployed versions of your function with a working queue output binding!
-
-# Azure Function App: Connect to Azure SQL Database using Output Binding
-
-This guide walks you through creating a Python Azure Function App that writes data to an Azure SQL Database using output bindings, from local setup to deployment.
-
+You have successfully tested both the local and deployed versions of your function with a working queue output binding!
 ---
+## Task 2: Azure Function App: Connect to Azure SQL Database using Output Binding
 
-## 📌 Step 1: Create Azure SQL Database
+### Step 1: Create Azure SQL Database
 
 Follow the Azure SQL quickstart to create a serverless Azure SQL Database.
-
-### Input Requirements:
+#### Input Requirements:
 - **Resource group**: Same as your function app
 - **Database name**: `mySampleDatabase`
 - **Server name**: Globally unique name
 - **Authentication**: SQL Server authentication
 - **Login**: `azureuser`
 - **Password**: Secure password
-- **Allow Azure services**: ✅ Yes
+- **Allow Azure services**: Yes
 
 ### Create `ToDo` Table
-
 ```sql
 CREATE TABLE dbo.ToDo (
     [Id] UNIQUEIDENTIFIER PRIMARY KEY,
@@ -215,11 +196,7 @@ CREATE TABLE dbo.ToDo (
     [completed] BIT NOT NULL
 );
 ```
-
----
-
-## ⚙️ Step 2: Update Function App Settings
-
+### Step 2: Update Function App Settings
 1. Copy the **ADO.NET** connection string from Azure Portal.
 2. Replace `<your_password>` with your actual SQL password.
 3. In VS Code:
@@ -230,12 +207,8 @@ CREATE TABLE dbo.ToDo (
    - `Ctrl+Shift+P` → `Azure Functions: Download Remote Settings`
    - Confirm overwrite
 
----
-
-## 🔧 Step 3: Register Binding Extensions
-
+### Step 3: Register Binding Extensions
 Update your `host.json` to include:
-
 ```json
 {
   "version": "2.0",
@@ -245,15 +218,10 @@ Update your `host.json` to include:
   }
 }
 ```
+Enables SQL binding without manual package installation.
 
-✅ Enables SQL binding without manual package installation.
-
----
-
-## ✍️ Step 4: Add SQL Output Binding to Function
-
+### Step 4: Add SQL Output Binding to Function
 Update `function_app.py`:
-
 ```python
 import azure.functions as func
 import logging
@@ -289,47 +257,37 @@ def test_function(req: func.HttpRequest, toDoItems: func.Out[func.SqlRow]) -> fu
         )
 ```
 
----
-
-## 🧪 Step 5: Run the Function Locally
-
+### Step 5: Run the Function Locally
+Open a terminal in your project directory and run the following:
 ```bash
+# Create and activate virtual environment (if not done already)
 python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+
+# Install required Python packages
 pip install -r requirements.txt
-func start
+
+# Start the Azure Function app locally
+press F5 to start the function app project and Core Tools.
+
+# With the Core Tools running, go to the Azure: Functions area. 
+Under Functions, expand Local Project > Functions. Right-click (Ctrl-click) the HttpExample function and select Execute Function Now....
+This sends a message ("Azure") to the queue `outqueue`
 ```
 
-Trigger using:
-
-```bash
-curl -X POST http://localhost:7071/api/hello \
--H "Content-Type: application/json" \
--d '{"name":"Azure"}'
-```
-
----
-
-## 🔍 Step 6: Verify SQL Insertion
-
+###  Step 6: Verify SQL Insertion
 In Azure SQL Portal > Query Editor:
-
 ```sql
 SELECT TOP 1000 * FROM dbo.ToDo;
 ```
-
 You should see the inserted data.
-
----
-
-## 🚀 Step 7: Redeploy Function to Azure
-
+### Step 7: Redeploy Function to Azure
 1. `F1` → `Azure Functions: Deploy to Function App...`
 2. Select your function app
 3. Confirm file overwrite
 4. Use `Execute Function Now...` to test live in Azure
 
-✅ Confirm data in Azure SQL Database.
+ Confirm data in Azure SQL Database.
 
 ---
 
