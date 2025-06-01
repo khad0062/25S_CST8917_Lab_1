@@ -1,14 +1,9 @@
 # Create Function App and Storage Account in Azure
-
 ## Step 1: Sign in to Azure Portal
-
 - Go to: [https://portal.azure.com](https://portal.azure.com)
 - Log in with your Azure account.
-
 ---
-
 ## Step 2: Create a Storage Account
-
 1. In the search bar, type **"Storage accounts"** and click on it.
 2. Click **+ Create**.
 3. **Basics tab**:
@@ -19,11 +14,7 @@
    - **Performance**: Standard
    - **Redundancy**: Locally-redundant storage (LRS) is fine for most cases.
 4. Click **Review + Create**, then **Create**.
-
----
-
 ## Step 3: Create a Function App
-
 1. In the search bar, type **"Function App"** and click on it.
 2. Click **+ Create**.
 3. **Basics tab**:
@@ -39,9 +30,6 @@
 6. **Monitoring tab**:
    - **Application Insights**: Enable (optional, for logging).
 7. Click **Review + Create**, then **Create**.
-
----
-
 ## Step 4: Wait for Deployment
 
 - After deployment completes, click **Go to Resource** to open your Function App.
@@ -54,18 +42,9 @@
 4. Select a **template**, such as **HTTP trigger**.
 5. Configure the **trigger settings** and click **Create**.
 
-## # Create a Local Azure Functions Project in Python (Visual Studio Code)
-
+## Create a Local Azure Functions Project in Python (Visual Studio Code)
 Follow the steps below to create a local Azure Functions project using **Python (Programming Model V2)** in **Visual Studio Code**.
-
 ---
-
-# Create a Local Azure Functions Project in Python (Visual Studio Code)
-
-Follow the steps below to create a local Azure Functions project using **Python (Programming Model V2)** in **Visual Studio Code**.
-
----
-
 ## Step 1: Open Command Palette
 
 - Press `F1` or `Ctrl+Shift+P` in Visual Studio Code.
@@ -111,6 +90,295 @@ You’re now ready to:
 - Add bindings (input/output)
 - Run and debug your function locally
 - Deploy the function to Azure
+
+ # Download Remote App Settings
+
+To connect your function to the Azure Storage account during local execution:
+
+1. Press `F1` in **Visual Studio Code**
+2. Run: `Azure Functions: Download Remote Settings...`
+3. Select your function app from the Azure list
+4. Select **"Yes to all"** to overwrite the existing settings
+5. Open the `local.settings.json` file
+6. Copy the value for `AzureWebJobsStorage`
+
+> ⚠️ **Important:** `local.settings.json` contains sensitive data and should not be committed to source control.
+
+---
+
+## 📦 2. Verify Extension Bundles
+
+Ensure the `host.json` file includes the correct extension bundle configuration:
+
+```json
+{
+  "version": "2.0",
+  "extensionBundle": {
+    "id": "Microsoft.Azure.Functions.ExtensionBundle",
+    "version": "[3.*, 4.0.0)"
+  }
+}
+```
+
+This enables support for Storage Queue output bindings without installing them manually.
+
+---
+
+## 🔧 3. Add Queue Output Binding to the Function
+
+Update your `function_app.py` file:
+
+```python
+import azure.functions as func
+import logging
+
+app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
+
+@app.route(route="HttpExample")
+@app.queue_output(arg_name="msg", queue_name="outqueue", connection="AzureWebJobsStorage")
+def HttpExample(req: func.HttpRequest, msg: func.Out[func.QueueMessage]) -> func.HttpResponse:
+    logging.info('Python HTTP trigger function processed a request.')
+
+    name = req.params.get('name')
+    if not name:
+        try:
+            req_body = req.get_json()
+        except ValueError:
+            pass
+        else:
+            name = req_body.get('name')
+
+    if name:
+        msg.set(name)
+        return func.HttpResponse(f"Hello, {name}. This HTTP triggered function executed successfully.")
+    else:
+        return func.HttpResponse(
+            "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.",
+            status_code=200
+        )
+```
+
+This allows your function to send the `name` value as a message to the `outqueue`.
+
+---
+
+## ▶️ 4. Run the Function Locally
+
+Open a terminal in your project directory and run the following:
+
+```bash
+# Create and activate virtual environment (if not done already)
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+
+# Install required Python packages
+pip install -r requirements.txt
+
+# Start the Azure Function app locally
+func start
+```
+
+---
+
+## 📬 5. Trigger the Function Locally
+
+Use a tool like curl, Postman, or the Azure extension in VS Code to invoke the function:
+
+```bash
+curl -X POST http://localhost:7071/api/HttpExample \
+-H "Content-Type: application/json" \
+-d '{"name":"Azure"}'
+```
+
+✅ This sends a message ("Azure") to the queue `outqueue`.
+
+---
+
+## 🔍 6. View the Queue Message (Using Azure Storage Explorer)
+
+- Download and install Azure Storage Explorer
+- Launch it and click **Connect**
+- Choose **Add an Azure account**, then sign in
+- Locate your storage account, then expand **Queues**
+- Open `outqueue`
+- You will see the message written by your function (e.g., "Azure")
+
+---
+
+## ☁️ 7. Deploy Updated Function to Azure
+
+To publish your updated function code to Azure:
+
+- Press `F1` in Visual Studio Code
+- Run: `Azure Functions: Deploy to Function App...`
+- Select the same Function App created earlier
+- Click **Deploy** when prompted to overwrite files
+
+---
+
+## 🔁 8. Test Live Function in Azure
+
+- Press `F1` and select `Azure Functions: Execute Function Now...`
+- Choose the `HttpExample` function
+- Enter this JSON as the request body:
+
+```json
+{ "name": "Azure" }
+```
+
+- Confirm the function executes successfully
+- Recheck the queue `outqueue` in Storage Explorer to confirm the message was added
+
+✅ You have successfully tested both the local and deployed versions of your function with a working queue output binding!
+
+# Azure Function App: Connect to Azure SQL Database using Output Binding
+
+This guide walks you through creating a Python Azure Function App that writes data to an Azure SQL Database using output bindings, from local setup to deployment.
+
+---
+
+## 📌 Step 1: Create Azure SQL Database
+
+Follow the Azure SQL quickstart to create a serverless Azure SQL Database.
+
+### Input Requirements:
+- **Resource group**: Same as your function app
+- **Database name**: `mySampleDatabase`
+- **Server name**: Globally unique name
+- **Authentication**: SQL Server authentication
+- **Login**: `azureuser`
+- **Password**: Secure password
+- **Allow Azure services**: ✅ Yes
+
+### Create `ToDo` Table
+
+```sql
+CREATE TABLE dbo.ToDo (
+    [Id] UNIQUEIDENTIFIER PRIMARY KEY,
+    [order] INT NULL,
+    [title] NVARCHAR(200) NOT NULL,
+    [url] NVARCHAR(200) NOT NULL,
+    [completed] BIT NOT NULL
+);
+```
+
+---
+
+## ⚙️ Step 2: Update Function App Settings
+
+1. Copy the **ADO.NET** connection string from Azure Portal.
+2. Replace `<your_password>` with your actual SQL password.
+3. In VS Code:
+   - `Ctrl+Shift+P` → `Azure Functions: Add New Setting`
+   - **Name**: `SqlConnectionString`
+   - **Value**: (your updated connection string)
+4. Then:
+   - `Ctrl+Shift+P` → `Azure Functions: Download Remote Settings`
+   - Confirm overwrite
+
+---
+
+## 🔧 Step 3: Register Binding Extensions
+
+Update your `host.json` to include:
+
+```json
+{
+  "version": "2.0",
+  "extensionBundle": {
+    "id": "Microsoft.Azure.Functions.ExtensionBundle",
+    "version": "[4.*, 5.0.0)"
+  }
+}
+```
+
+✅ Enables SQL binding without manual package installation.
+
+---
+
+## ✍️ Step 4: Add SQL Output Binding to Function
+
+Update `function_app.py`:
+
+```python
+import azure.functions as func
+import logging
+from azure.functions.decorators.core import DataType
+import uuid
+
+app = func.FunctionApp()
+
+@app.function_name(name="HttpTrigger1")
+@app.route(route="hello", auth_level=func.AuthLevel.ANONYMOUS)
+@app.generic_output_binding(
+    arg_name="toDoItems",
+    type="sql",
+    CommandText="dbo.ToDo",
+    ConnectionStringSetting="SqlConnectionString",
+    data_type=DataType.STRING
+)
+def test_function(req: func.HttpRequest, toDoItems: func.Out[func.SqlRow]) -> func.HttpResponse:
+    logging.info('Python HTTP trigger function processed a request.')
+    name = req.get_json().get('name')
+    if name:
+        toDoItems.set(func.SqlRow({
+            "Id": str(uuid.uuid4()),
+            "title": name,
+            "completed": False,
+            "url": ""
+        }))
+        return func.HttpResponse(f"Hello {name}!")
+    else:
+        return func.HttpResponse(
+            "Please pass a name on the query string or in the request body",
+            status_code=400
+        )
+```
+
+---
+
+## 🧪 Step 5: Run the Function Locally
+
+```bash
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+func start
+```
+
+Trigger using:
+
+```bash
+curl -X POST http://localhost:7071/api/hello \
+-H "Content-Type: application/json" \
+-d '{"name":"Azure"}'
+```
+
+---
+
+## 🔍 Step 6: Verify SQL Insertion
+
+In Azure SQL Portal > Query Editor:
+
+```sql
+SELECT TOP 1000 * FROM dbo.ToDo;
+```
+
+You should see the inserted data.
+
+---
+
+## 🚀 Step 7: Redeploy Function to Azure
+
+1. `F1` → `Azure Functions: Deploy to Function App...`
+2. Select your function app
+3. Confirm file overwrite
+4. Use `Execute Function Now...` to test live in Azure
+
+✅ Confirm data in Azure SQL Database.
+
+---
+
 
 
 
