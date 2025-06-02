@@ -1,4 +1,6 @@
 # CST8917 Lab 1: Building Azure Function Apps with Output Bindings
+## Youtube Demo Video
+[Youtube Video](https://youtu.be/nYrQ-WWmtLI)
 
 ## Task 1: Connect Azure Functions to Azure Storage using Visual Studio Code.
 ## 1. Create Azure Resources
